@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>콜레이 피격음 재생기 3.01</title>
+    <link rel="stylesheet" href="style.css"> <!-- 외부 CSS 파일 연결 -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: url('back2.png') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            flex-direction: column;
+        }
+        .container {
+            text-align: center;
+            position: relative;
+        }
+        #title {
+            font-size: 3rem;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            margin-bottom: 20px;
+        }
+        #clickableImage {
+            width: 300px;
+            cursor: pointer;
+        }
+        #audioPlayer {
+            display: none;
+        }
+        .blood {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .red-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 0, 0, 0.75);
+            display: none;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        #globalCount,
+        #deathCount {
+            margin-top: 10px;
+            font-size: 1.5rem;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        /* 팝업 스타일 */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 400px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10000;
+            text-align: center;
+        }
+        .popup button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .popup button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="title">콜레이 피격음 재생기 3.01</div>
+        <div id="subtitle">Collei hit sound generator</div> <!-- 추가된 문구 -->
+
+        <img id="clickableImage" src="스크린샷 2024-11-10 004059.png" alt="클릭해서 무작위 mp3 재생">
+        <audio id="audioPlayer" controls></audio>
+        <div id="redOverlay" class="red-overlay"></div>
+        <div id="globalCount">콜레이가 괴롭힘당한 횟수: 0</div> <!-- 글로벌 카운트 -->
+        <div id="deathCount">콜레이 사망 횟수: 0</div> <!-- 사망 횟수 카운트 -->
+        <div id="colleiInfo">
+            <a href="https://ysire144.github.io/whocollei4/" target="_blank">Who is Collei?</a>
+            <div id="clickText">click</div> <!-- "click" 텍스트 -->
+        </div>
+        
+        
+    </div>
+
+    <script>
+        // 팝업 표시를 위한 세션 스토리지 사용
+        if (!sessionStorage.getItem('popupDisplayed')) {
+            showPopup();
+            sessionStorage.setItem('popupDisplayed', 'true');
+        }
+
+        function showPopup() {
+            const popup = document.createElement('div');
+            popup.className = 'popup';
+            popup.innerHTML = `
+                <p>3.01 업데이트 노트: 콜레이 설명 페이지가 추가되었습니다.</p>
+                <button onclick="closePopup(this)">닫기</button>
+            `;
+            document.body.appendChild(popup);
+        }
+
+        function closePopup(button) {
+            const popup = button.parentElement;
+            popup.remove();
+        }
+
+        let clickCount = 0;
+        const maxClicks = 12;
+        const mp3Files = [
+            '1000100_01_kr.mp3',
+            '1000100_03_kr.mp3',
+            '1000100_04_kr.mp3',
+            '1000100_05_kr.mp3',
+            '1000100_06_kr.mp3',
+            '1000101_01_kr.mp3',
+            '1000101_02_kr.mp3',
+            '1000101_03_kr.mp3',
+            '1000101_04_kr.mp3',
+            '1000101_05_kr.mp3',
+            '1000101_06_kr.mp3'
+        ];
+        const deathSounds = ['콜레이사망1.mp3', '콜레이사망2.mp3', '콜레이사망3.mp3'];
+
+        const clickableImage = document.getElementById('clickableImage');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const redOverlay = document.getElementById('redOverlay');
+        const globalCountDisplay = document.getElementById('globalCount');
+        const deathCountDisplay = document.getElementById('deathCount');
+
+        let globalClickCount = localStorage.getItem('globalClickCount') || 0;
+        let deathCount = localStorage.getItem('deathCount') || 0;
+        globalCountDisplay.textContent = `콜레이가 괴롭힘당한 횟수: ${globalClickCount}`;
+        deathCountDisplay.textContent = `콜레이 사망 횟수: ${deathCount}`;
+
+        clickableImage.addEventListener('click', () => {
+            if (redOverlay.style.display === 'block') return;
+
+            const randomIndex = Math.floor(Math.random() * mp3Files.length);
+            const selectedMp3 = mp3Files[randomIndex];
+
+            if (!audioPlayer.paused) {
+                clickCount++;
+            }
+
+            if (clickCount >= maxClicks) {
+                redOverlay.style.display = 'block';
+                const randomDeathSound = deathSounds[Math.floor(Math.random() * deathSounds.length)];
+                audioPlayer.src = randomDeathSound;
+                audioPlayer.play().catch(error => {
+                    console.error('사망 오디오 재생에 실패했습니다:', error);
+                });
+
+                deathCount++;
+                localStorage.setItem('deathCount', deathCount);
+                deathCountDisplay.textContent = `콜레이 사망 횟수: ${deathCount}`;
+                return;
+            }
+
+            audioPlayer.src = selectedMp3;
+            audioPlayer.play().catch(error => {
+                console.error('오디오 재생에 실패했습니다:', error);
+            });
+
+            const bloodImage = document.createElement('img');
+            bloodImage.src = 'blood.png';
+            bloodImage.className = 'blood';
+
+            const maxX = window.innerWidth - 800;
+            const maxY = window.innerHeight - 800;
+            const randomX = Math.random() * maxX;
+            const randomY = Math.random() * maxY;
+            bloodImage.style.left = `${randomX}px`;
+            bloodImage.style.top = `${randomY}px`;
+
+            const randomRotation = Math.floor(Math.random() * 360);
+            bloodImage.style.transform = `rotate(${randomRotation}deg)`;
+
+            document.body.appendChild(bloodImage);
+
+            setTimeout(() => {
+                bloodImage.remove();
+            }, 500);
+
+            globalClickCount++;
+            localStorage.setItem('globalClickCount', globalClickCount);
+            globalCountDisplay.textContent = `콜레이가 괴롭힘당한 횟수: ${globalClickCount}`;
+        });
+    </script>
+</body>
+</html>
+<style>
+    .popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        max-width: 400px;
+        padding: 20px;
+        background: rgba(34, 139, 34, 0.85); /* 숲의 녹색 배경 */
+        border: 2px solid #2e8b57; /* 좀 더 어두운 녹색 테두리 */
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* 어두운 그림자 */
+        color: #fffaf0; /* 아이보리 색 텍스트 */
+        z-index: 10000;
+        text-align: center;
+        font-family: 'Georgia', serif; /* 고전적인 서체 */
+    }
+    .popup button {
+        margin-top: 10px;
+        padding: 10px 20px;
+        background-color: #3cb371; /* 숲의 나뭇잎 색상 */
+        color: #fff;
+        border: 1px solid #2e8b57; /* 테두리 */
+        border-radius: 6px;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s;
+    }
+    .popup button:hover {
+        background-color: #2e8b57; /* 짙은 초록색으로 변함 */
+    }
+</style>
+<script>
+const colleiLink = document.querySelector('#colleiInfo a');
+const clickText = document.getElementById('clickText');
+
+colleiLink.addEventListener('mouseover', () => {
+    clickText.style.display = 'block';
+});
+
+colleiLink.addEventListener('mouseout', () => {
+    clickText.style.display = 'none';
+});
+
+colleiLink.addEventListener('mousemove', (e) => {
+    const offset = 15; // 마우스 커서와 텍스트의 오프셋 거리
+    clickText.style.left = `${e.pageX + offset}px`; // 마우스 커서 위치 조정
+    clickText.style.top = `${e.pageY + offset}px`;
+});
+
+
+</script>

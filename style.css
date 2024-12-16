@@ -1,0 +1,39 @@
+#colleiInfo {
+    position: relative;
+    display: inline-block;
+    margin-top: 20px;
+}
+
+#colleiInfo a {
+    font-size: 4rem; /* 기존 크기의 두 배 */
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+#clickText {
+    position: absolute;
+    font-size: 2rem; /* 글씨 크기 */
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    pointer-events: none; /* 클릭 방지 */
+    display: none; /* 기본적으로 숨김 */
+    transform: translate(-50%, -50%); /* 중앙 정렬 */
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+}
+
+
+
+#colleiInfo a:hover + #clickText {
+    display: block; /* 마우스가 링크에 있을 때 "click" 표시 */
+}
+#subtitle {
+    font-size: 2.1rem; /* 기존 제목의 70% 크기 */
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    margin-top: -10px; /* 제목과의 간격 조정 */
+    font-family: 'Georgia', serif; /* 폰트를 다시 설정 */
+    text-align: center;
+}
